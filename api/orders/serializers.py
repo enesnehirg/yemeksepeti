@@ -2,7 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 
 from .models import Order, OrderItem
-from api.restaurants.serializers import FoodSerializer, RestaurantSerializer
+from api.restaurants.models import Restaurant
+from api.restaurants.serializers import FoodSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -36,9 +37,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    orderitem_set = OrderItemSerializer(many=True, read_only=False, required=False)
-    restaurant = RestaurantSerializer(read_only=True)
-    user = UserSerializer(read_only=True)
+    orderitem_set = OrderItemSerializer(many=True, required=True)
+    restaurant = serializers.PrimaryKeyRelatedField(queryset=Restaurant.objects)
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects)
 
     class Meta:
         model = Order
@@ -50,17 +51,25 @@ class OrderSerializer(serializers.ModelSerializer):
             'orderitem_set'
         ]
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        restaurant = instance.restaurant.name
+        user_serializer = UserSerializer(instance.user)
+        data['restaurant'] = restaurant
+        data['user'] = user_serializer.data
+        return data
+
     def create(self, validated_data):
-        orderitem_set = validated_data["orderitem_set"]
         order = Order.objects.create(
             user=validated_data["user"],
             restaurant=validated_data["restaurant"]
         )
-        for orderitem in orderitem_set:
-            print(orderitem)
-            OrderItem.objects.create(
-                food=orderitem["food"],
-                quantity=orderitem["quantity"],
-                order=order
-            )
+        if "orderitem_set" in validated_data:
+            orderitem_set = validated_data["orderitem_set"]
+            for orderitem in orderitem_set:
+                OrderItem.objects.create(
+                    food=orderitem["food"],
+                    quantity=orderitem["quantity"],
+                    order=order
+                )
         return order

@@ -9,16 +9,25 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+  redis:
+    image: redis:alpine
   web:
     build: .
     command: >
       sh -c "python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
+             python manage.py runserver 0.0.0.0:8000 &
+             python manage.py subscribe"
     volumes:
       - .:/code
     environment:
       - DJANGO_SETTINGS_MODULE=api.settings.docker
+      - REDIS_HOST=redis
+      - DB_HOST=db
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
     ports:
       - "8000:8000"
     depends_on:
       - db
+      - redis
