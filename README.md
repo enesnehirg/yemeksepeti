@@ -12,6 +12,8 @@ published to that topic. Just after that, API automatically sends a `PATCH` requ
 which makes the order's status "Completed". This sounds weird but that is the only way to subscribe a topic from an 
 endpoint.
 
+It also loads some initial Food, Restaurant and Category data while it's starting.
+
 You can also run it without docker.
 
 ### Run in your local computer
