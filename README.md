@@ -8,9 +8,7 @@ If you have already installed Docker on your local computer, just run the bash s
 
 This command will pull Redis, PostgreSQL and this web API's image and start the development server on localhost:8000.
 Once you have started, API is going to listen pub/sub topic 'orders'. If an order gets created, then its data will be 
-published to that topic. Just after that, API automatically sends a `PATCH` request to `api/v1/complete-order/<:id>/` 
-which makes the order's status "Completed". This sounds weird but that is the only way to subscribe a topic from an 
-endpoint.
+published to that topic. 
 
 It also loads some initial Food, Restaurant and Category data while it's starting.
 
